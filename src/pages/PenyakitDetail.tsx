@@ -11,7 +11,10 @@ import { InputText } from '@/components/Inputs/InputText'
 import useHandleInput from '@/hooks/useHandleInput'
 import { closeModal, openModal } from '@/utils'
 import CircleLoading from '@/components/CircleLoading'
-import { Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { PengetahuanApi } from '@/api/pengetahuanApi'
+import { GejalaApi } from '@/api/gejalaApi'
+import { InputColumn } from '@/components/Inputs/InputColumn'
 
 interface PenyakitDTO {
   kode: string
@@ -19,17 +22,27 @@ interface PenyakitDTO {
   penanganan_awal: string
 }
 
-const Penyakit = () => {
+const PenyakitDetail = () => {
+  const { id_penyakit } = useParams();
+
   const [dataList, setDataList] = useState([])
+  const [dataGejalaList, setDataGejalaList] = useState([])
+
   const [errorMessage, setErrorMessage] = useState('')
   const [alertMessage, setAlertMessage] = useState('')
   const [formType, setFormType] = useState<'create' | 'update'>('create')
   const [id, setId] = useState<number>(0)
 
   const getAllData = async () => {
-    const data = await PenyakitApi.getAll()
+    const data = await PengetahuanApi.getByPenyakitId(Number(id_penyakit));
     data.data && setDataList(data.data)
   }
+
+  const getAllGejala = async () => {
+    const data = await GejalaApi.getAll();
+    data.data && setDataGejalaList(data.data)
+  }
+
 
   const modalFormRef = useRef<ModalHandle>(null);
   const modalRefAlert = useRef<ModalHandle>(null);
@@ -107,7 +120,7 @@ const Penyakit = () => {
     <>
       <Sidebar/>
       <Main>
-        <Navbar page='Penyakit' />
+        <Navbar page={`Detail Penyakit (CF Rule) - ${id_penyakit}`} />
         <Container>
 
           <div className='flex justify-end mb-4'>
@@ -120,9 +133,8 @@ const Penyakit = () => {
               thead={
                 <>
                   <TableHead text='No' className='w-12' />
-                  <TableHead text='Kode' />
-                  <TableHead text='Nama Penyakit' />
-                  <TableHead text='Penanganan Awal' />
+                  <TableHead text='Nama Gejala' />
+                  <TableHead text='Nilai CF Rule (Pakar)' />
                   <TableHead />
                   <TableHead />
                 </>}
@@ -131,16 +143,15 @@ const Penyakit = () => {
                 {dataList && dataList.map((item: any, index: number) => (
                   <tr key={index}>
                     <TableData text={index+1} />
-                    <TableData text={item.kode} />
                     <TableData text={item.nama_penyakit} />
-                    <TableData text={item.penanganan_awal} />
+                    <TableData text={
+                      <>
+                        <input type='number' value={item.cr_rule} className='border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-blue-500 w-28' />
+                      </>
+                    } />
                     <TableData className='w-full' />
                     <TableData text={
                       <div className='flex flex-row'>
-                        <Link to={`/penyakit/${item.id}`}>
-                          <BaseButton text='Edit CF Rule' className='bg-blue-400 hover:bg-blue-500 me-2'  />
-                        </Link>
-                        <BaseButton text='Edit' onClick={() => handleEdit(item.id, item.kode, item.nama_penyakit, item.penanganan_awal)} className='bg-blue-400 hover:bg-blue-500 me-2'  />
                         <BaseButton text='Hapus' onClick={() => openModalDelete(item.id)} className='bg-red-400 hover:bg-red-500'  />
                       </div>
                     } className='w-48' />
@@ -173,4 +184,4 @@ const Penyakit = () => {
   )
 }
 
-export default Penyakit
+export default PenyakitDetail

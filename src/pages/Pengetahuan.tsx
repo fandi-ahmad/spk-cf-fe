@@ -19,7 +19,7 @@ interface PenyakitDTO {
   penanganan_awal: string
 }
 
-const Penyakit = () => {
+const Pengetahuan = () => {
   const [dataList, setDataList] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [alertMessage, setAlertMessage] = useState('')
@@ -137,11 +137,9 @@ const Penyakit = () => {
                     <TableData className='w-full' />
                     <TableData text={
                       <div className='flex flex-row'>
-                        <Link to={`/penyakit/${item.id}`}>
+                        <Link to={`/pengetahuan/${item.nama_penyakit}`}>
                           <BaseButton text='Edit CF Rule' className='bg-blue-400 hover:bg-blue-500 me-2'  />
                         </Link>
-                        <BaseButton text='Edit' onClick={() => handleEdit(item.id, item.kode, item.nama_penyakit, item.penanganan_awal)} className='bg-blue-400 hover:bg-blue-500 me-2'  />
-                        <BaseButton text='Hapus' onClick={() => openModalDelete(item.id)} className='bg-red-400 hover:bg-red-500'  />
                       </div>
                     } className='w-48' />
                   </tr>
@@ -173,4 +171,4 @@ const Penyakit = () => {
   )
 }
 
-export default Penyakit
+export default Pengetahuan

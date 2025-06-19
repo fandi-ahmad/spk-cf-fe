@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Sidebar from '@/components/Sidebar'
 import { BaseTable, TableData, TableHead } from '@/components/Table'
 import { BaseButton, ButtonPrimary } from '@/components/Buttons'
+import { PengetahuanApi } from '@/api/pengetahuanApi'
 import { PenyakitApi } from '@/api/penyakitApi'
 import { useEffect, useRef, useState } from 'react'
 import { ModalAlert, ModalHandle } from '@/components/Modals/ModalAlert'
@@ -11,15 +12,14 @@ import { InputText } from '@/components/Inputs/InputText'
 import useHandleInput from '@/hooks/useHandleInput'
 import { closeModal, openModal } from '@/utils'
 import CircleLoading from '@/components/CircleLoading'
-import { Link } from 'react-router-dom'
 
-interface PenyakitDTO {
-  kode: string
-  nama_penyakit: string
-  penanganan_awal: string
+interface PengetahuanDTO {
+  id_gejala: number
+  id_penyakit: number
+  cr_rule: number
 }
 
-const Penyakit = () => {
+const PengetahuanDetail = () => {
   const [dataList, setDataList] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
   const [alertMessage, setAlertMessage] = useState('')
@@ -27,7 +27,7 @@ const Penyakit = () => {
   const [id, setId] = useState<number>(0)
 
   const getAllData = async () => {
-    const data = await PenyakitApi.getAll()
+    const data = await PengetahuanApi.getAll()
     data.data && setDataList(data.data)
   }
 
@@ -35,23 +35,23 @@ const Penyakit = () => {
   const modalRefAlert = useRef<ModalHandle>(null);
   const modalRefDelete = useRef<ModalHandle>(null);
   
-  const { formState, setFormState, handleInput } = useHandleInput<PenyakitDTO>({
-    kode: '',
-    nama_penyakit: '',
-    penanganan_awal: ''
+  const { formState, setFormState, handleInput } = useHandleInput<PengetahuanDTO>({
+    id_gejala: 0,
+    id_penyakit: 0,
+    cr_rule: 0
   });
 
   const handleOpenModal = () => {
     openModal(modalFormRef)
     setFormType('create')
-    setFormState({ kode: '', nama_penyakit: '', penanganan_awal: '' })
+    setFormState({ id_gejala: 0, id_penyakit: 0, cr_rule: 0 })
     setErrorMessage('')
   }
 
-  const handleEdit = (id: number, kode: string, nama_penyakit: string, penanganan_awal: string) => {
+  const handleEdit = (id: number, kode: string, nama_gejala: string) => {
     openModal(modalFormRef)
     setFormType('update')
-    setFormState({ kode, nama_penyakit, penanganan_awal })
+    setFormState({ id_gejala: 0, id_penyakit: 0, cr_rule: 0 })
     setId(id)
   }
 
@@ -61,9 +61,9 @@ const Penyakit = () => {
       let response: any
 
       if (formType === 'create') {
-        response = await PenyakitApi.create(formState)
+        response = await PengetahuanApi.create(formState)
       } else {
-        response = await PenyakitApi.update(id, formState)
+        response = await PengetahuanApi.update(id, formState)
       }
 
       if (response.status === 201 || response.status === 200) {
@@ -86,7 +86,7 @@ const Penyakit = () => {
   const handleDelete = async () => {
     try {
       openModal(modalRefAlert)
-      const response = await PenyakitApi.delete(id)
+      const response = await PengetahuanApi.delete(id)
       if (response.status === 200) {
         getAllData()
         closeModal(modalRefDelete)
@@ -107,7 +107,7 @@ const Penyakit = () => {
     <>
       <Sidebar/>
       <Main>
-        <Navbar page='Penyakit' />
+        <Navbar page='Pengetahuan' />
         <Container>
 
           <div className='flex justify-end mb-4'>
@@ -121,8 +121,7 @@ const Penyakit = () => {
                 <>
                   <TableHead text='No' className='w-12' />
                   <TableHead text='Kode' />
-                  <TableHead text='Nama Penyakit' />
-                  <TableHead text='Penanganan Awal' />
+                  <TableHead text='Nama Gejala' />
                   <TableHead />
                   <TableHead />
                 </>}
@@ -132,15 +131,11 @@ const Penyakit = () => {
                   <tr key={index}>
                     <TableData text={index+1} />
                     <TableData text={item.kode} />
-                    <TableData text={item.nama_penyakit} />
-                    <TableData text={item.penanganan_awal} />
+                    <TableData text={item.nama_gejala} />
                     <TableData className='w-full' />
                     <TableData text={
                       <div className='flex flex-row'>
-                        <Link to={`/penyakit/${item.id}`}>
-                          <BaseButton text='Edit CF Rule' className='bg-blue-400 hover:bg-blue-500 me-2'  />
-                        </Link>
-                        <BaseButton text='Edit' onClick={() => handleEdit(item.id, item.kode, item.nama_penyakit, item.penanganan_awal)} className='bg-blue-400 hover:bg-blue-500 me-2'  />
+                        <BaseButton text='Edit' onClick={() => handleEdit(item.id, item.kode, item.nama_gejala)} className='bg-blue-400 hover:bg-blue-500 me-2'  />
                         <BaseButton text='Hapus' onClick={() => openModalDelete(item.id)} className='bg-red-400 hover:bg-red-500'  />
                       </div>
                     } className='w-48' />
@@ -152,11 +147,10 @@ const Penyakit = () => {
         </Container>
       </Main>
       
-      <ModalForm title={`${formType === 'create' ? 'Tambah' : 'Edit'} Data Penyakit`} ref={modalFormRef} onSave={handleSave}>
+      <ModalForm title={`${formType === 'create' ? 'Tambah' : 'Edit'} Data Gejala`} ref={modalFormRef} onSave={handleSave}>
         <div>
-          <InputText text='Kode' name='kode' value={formState.kode} onChange={handleInput} />
-          <InputText text='Nama Penyakit' name='nama_penyakit' value={formState.nama_penyakit} onChange={handleInput} />
-          <InputText text='Penanganan Awal' name='penanganan_awal' value={formState.penanganan_awal} onChange={handleInput} />
+          {/* <InputText text='Kode' name='kode' value={formState.id_gejala} onChange={handleInput} />
+          <InputText text='Nama Gejala' name='nama_gejala' value={formState.id_penyakit} onChange={handleInput} /> */}
           <small className='text-red-500'>{errorMessage}</small>
         </div>
       </ModalForm>
@@ -166,11 +160,11 @@ const Penyakit = () => {
       />
 
       <ModalAlert ref={modalRefDelete}
-        message='Yakin ingin menghapus data penyakit yang dipilih?'
+        message='Yakin ingin menghapus data gejala yang dipilih?'
         onConfirm={handleDelete}
       />
     </>
   )
 }
 
-export default Penyakit
+export default PengetahuanDetail
